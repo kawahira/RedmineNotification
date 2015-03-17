@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <redmine-url>https://hogehoge</redmine-url>
+  <redmine-project>fugafuga</redmine-project>
+  <redmine-apikey>123456789</redmine-apikey>
+  <redmine-query-id>1</redmine-query-id>
+  <chatwork-title>Redmineのチケット一覧</chatwork-title>
+  <chatwork-apikey>123456789</chatwork-apikey>
+  <chatwork-roomid>1234</chatwork-roomid>
+  <hipchat-authtoken>hogehogefugafuga</hipchat-authtoken>
+  <hipchat-roomid>123456</hipchat-roomid>
+</Settings>
