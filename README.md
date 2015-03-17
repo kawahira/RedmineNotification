@@ -12,14 +12,14 @@ RedmineNotification settings.xml
 
 # settings.xml
 
-  <redmine-url>RedmineのURL</redmine-url>
-  <redmine-project>Redmine上のプロジェクト名</redmine-project>
-  <redmine-apikey>RedmineのAPIKEY</redmine-apikey>
-  <redmine-query-id>利用するクエリーID</redmine-query-id>
-  <chatwork-title>チャットワークのタイトルに表示する文字列</chatwork-title>
-  <chatwork-apikey>チャットワークのAPIKEY</chatwork-apikey>
-  <chatwork-roomid>チャットワークのルーム番号</chatwork-roomid>
-  <hipchat-authtoken>hipchatのauthtoken</hipchat-authtoken>
-  <hipchat-roomid>hipchatのroomid</hipchat-roomid>
+<redmine-url>RedmineのURL</redmine-url>
+<redmine-project>Redmine上のプロジェクト名</redmine-project>
+<redmine-apikey>RedmineのAPIKEY</redmine-apikey>
+<redmine-query-id>利用するクエリーID</redmine-query-id>
+<chatwork-title>チャットワークのタイトルに表示する文字列</chatwork-title>
+<chatwork-apikey>チャットワークのAPIKEY</chatwork-apikey>
+<chatwork-roomid>チャットワークのルーム番号</chatwork-roomid>
+<hipchat-authtoken>hipchatのauthtoken</hipchat-authtoken>
+<hipchat-roomid>hipchatのroomid</hipchat-roomid>
   
   
