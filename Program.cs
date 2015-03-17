@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -50,15 +49,19 @@ namespace RedmineNotification
         /// </summary>
         public static int Main(string[] args)
         {
+            if (args.Length == 0)
+            {
+                Console.WriteLine("XMLファイルが指定されていません。");
+                return 1;
+            }
             IList<Issue> cacheList = new List<Issue>();
             IList<Issue> resultList = new List<Issue>();
             IList<Issue> changetList = new List<Issue>();
             const string cacheFileName = "cache.json";
-            const string fileName = "Settings.xml";
             var serializer = new XmlSerializer(typeof (Settings));
             try
             {
-                using (var sr = new StreamReader(fileName))
+                using (var sr = new StreamReader(args[0]))
                 {
                     _settings = (Settings) serializer.Deserialize(sr);
                 }
@@ -81,14 +84,22 @@ namespace RedmineNotification
                 Console.WriteLine("キャッシュファイルが読み込めませんでした。");
             }
             var manager = new RedmineManager(_settings.GetRedmineProjectUrl(), _settings.RedmineApiKey);
-            var parameters = new NameValueCollection {{"query_id", _settings.RedmineQueryId}};
-            changetList = GetChangeSets(manager.GetObjectList<Issue>(parameters),cacheList);
-            foreach (var s in GetLostList(manager.GetObjectList<Issue>(parameters),cacheList) )
+            var parameters = new NameValueCollection { { "query_id", _settings.RedmineQueryId } };
+            try
             {
-                s.Status.Name = "完了";
-                changetList.Add(s);
+                changetList = GetChangeSets(manager.GetObjectList<Issue>(parameters), cacheList);
+                foreach (var s in GetLostList(manager.GetObjectList<Issue>(parameters), cacheList))
+                {
+                    s.Status.Name = "完了";
+                    changetList.Add(s);
+                }
+                resultList = GetChangeSets(manager.GetObjectList<Issue>(parameters), changetList);
             }
-            resultList = GetChangeSets(manager.GetObjectList<Issue>(parameters), changetList);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return 1;
+            }
             try
             {
                 var json = JsonConvert.SerializeObject(manager.GetObjectList<Issue>(parameters));
