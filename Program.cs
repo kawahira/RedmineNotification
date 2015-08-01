@@ -4,12 +4,12 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using Chatwork.Service;
 using HipchatApiV2;
 using HipchatApiV2.Enums;
 using Newtonsoft.Json;
 using Redmine.Net.Api;
 using Redmine.Net.Api.Types;
+using CSChatworkAPI;
 
 namespace RedmineNotification
 {
@@ -18,18 +18,30 @@ namespace RedmineNotification
         static Settings _settings;
         public static string GetMessage(IList<Issue> list, string retCode, string title)
         {
+            var memdic = new Dictionary<string, List<Issue>>();
+            foreach (var l in list)
+            {
+                var name = "未定";
+                if (l.AssignedTo != null)
+                {
+                    name = l.AssignedTo.Name;
+                }
+                if (memdic.ContainsKey(name) == false)
+                {
+                    memdic.Add(name, new List<Issue>());
+                }
+                memdic[name].Add(l);
+            }
             var message = string.Empty;
             if (list.Count != 0)
             {
-                message = title + ":" + list.Count + "枚 "  + retCode;
-                message =
-                    list
-                        .Select(
-                            issue =>
-                                "    #" + issue.Id + " 『" + issue.Subject + "』 担当:" +
-                                (issue.AssignedTo != null ? issue.AssignedTo.Name : "未定") + " 状態:" + issue.Status.Name +
-                                " " + _settings.GetRedmineIssueUrl(issue.Id) + retCode)
-                        .Aggregate(message, (current, rest) => current + rest);
+                message = title + " : " + list.Count + "枚 " + retCode + retCode;
+                foreach (var l in memdic)
+                {
+                    message += l.Key + retCode;
+                    message = l.Value.Aggregate(message, (current, r) => current + ("    #" + r.Id + " 『" + r.Subject +"』" + "(" + r.Status.Name +")" + " " + _settings.GetRedmineIssueUrl(r.Id) + retCode));
+                    message += retCode;
+                }
             }
             return message + retCode;
         }
@@ -58,12 +70,12 @@ namespace RedmineNotification
             IList<Issue> resultList = new List<Issue>();
             IList<Issue> changetList = new List<Issue>();
             const string cacheFileName = "cache.json";
-            var serializer = new XmlSerializer(typeof (Settings));
+            var serializer = new XmlSerializer(typeof(Settings));
             try
             {
                 using (var sr = new StreamReader(args[0]))
                 {
-                    _settings = (Settings) serializer.Deserialize(sr);
+                    _settings = (Settings)serializer.Deserialize(sr);
                 }
             }
             catch (Exception e)
@@ -118,19 +130,21 @@ namespace RedmineNotification
                 if (string.IsNullOrEmpty(_settings.ChatworkApiKey) == false)
                 {
                     var client = new ChatworkClient(_settings.ChatworkApiKey);
-                    var sentMessage =
-                        client.Room.SendMessgesAsync(Convert.ToInt32(_settings.ChatworkApiRoomId),
-                            "[info][title]" + _settings.ChatworkTitle + " 合計:" + (changetList.Count + resultList.Count) + "枚 " + _settings.GetRedmineQueryUrl() + "[/title]" +
-                            GetMessage(changetList, "\n", "変更チケット") +
-                            GetMessage(resultList, "\n", "残りチケット") +
-                            "[/info]").Result;
+                    var roomid = Convert.ToInt32(_settings.ChatworkApiRoomId);
+                    var meessage = "[info][title]" + _settings.ChatworkTitle + " 合計:" +
+                                   (changetList.Count + resultList.Count) + "枚 " + _settings.GetRedmineQueryUrl() +
+                                   "[/title]" +
+                                   GetMessage(changetList, "\n", "変更チケット") +
+                                   GetMessage(resultList, "\n", "残りチケット") + "[/info]";
+                    var sentMessage = client.SendMessage(roomid, meessage);
+                    Console.WriteLine(sentMessage);
                 }
                 if (string.IsNullOrEmpty(_settings.HipchatAuthToken) == false)
                 {
                     var client = new HipchatClient(_settings.HipchatAuthToken);
                     var request = new HipchatApiV2.Requests.SendRoomNotificationRequest()
                     {
-                        Message = " 合計:" + (changetList.Count + resultList.Count) + "枚 " + _settings.GetRedmineQueryUrl() + "<BR>" +GetMessage(changetList, "<BR>", "変更チケット") + GetMessage(resultList, "<BR>", "残りチケット"),
+                        Message = " 合計:" + (changetList.Count + resultList.Count) + "枚 " + _settings.GetRedmineQueryUrl() + "<BR>" + GetMessage(changetList, "<BR>", "変更チケット") + GetMessage(resultList, "<BR>", "残りチケット"),
                         MessageFormat = HipchatMessageFormat.Html,
                         Notify = true,
                         Color = RoomColors.Purple
