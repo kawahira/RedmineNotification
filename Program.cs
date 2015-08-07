@@ -97,15 +97,16 @@ namespace RedmineNotification
             }
             var manager = new RedmineManager(_settings.GetRedmineProjectUrl(), _settings.RedmineApiKey);
             var parameters = new NameValueCollection { { "query_id", _settings.RedmineQueryId } };
+            var result = manager.GetTotalObjectList<Issue>(parameters);
             try
             {
-                changetList = GetChangeSets(manager.GetObjectList<Issue>(parameters), cacheList);
-                foreach (var s in GetLostList(manager.GetObjectList<Issue>(parameters), cacheList))
+                changetList = GetChangeSets(result, cacheList);
+                foreach (var s in GetLostList(result, cacheList))
                 {
                     s.Status.Name = "完了";
                     changetList.Add(s);
                 }
-                resultList = GetChangeSets(manager.GetObjectList<Issue>(parameters), changetList);
+                resultList = GetChangeSets(result, changetList);
             }
             catch (Exception e)
             {
@@ -114,7 +115,7 @@ namespace RedmineNotification
             }
             try
             {
-                var json = JsonConvert.SerializeObject(manager.GetObjectList<Issue>(parameters));
+                var json = JsonConvert.SerializeObject(result);
                 using (var sw = new StreamWriter(cacheFileName))
                 {
                     sw.WriteLine(json);
