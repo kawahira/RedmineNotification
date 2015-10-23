@@ -135,8 +135,8 @@ namespace RedmineNotification
                     var meessage = "[info][title]" + _settings.ChatworkTitle + " 合計:" +
                                    (changetList.Count + resultList.Count) + "枚 " + _settings.GetRedmineQueryUrl() +
                                    "[/title]" +
-                                   GetMessage(changetList, "\n", "変更チケット") +
-                                   GetMessage(resultList, "\n", "残りチケット") + "[/info]";
+                                   GetMessage(changetList, "\n", "変更チケット") + "[/info]";
+//                                   GetMessage(resultList, "\n", "残りチケット") + "[/info]";
                     var sentMessage = client.SendMessage(roomid, meessage);
                     Console.WriteLine(sentMessage);
                 }
