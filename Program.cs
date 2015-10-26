@@ -43,7 +43,7 @@ namespace RedmineNotification
                     message += retCode;
                 }
             }
-            return message + retCode;
+            return message;
         }
 
         public static IList<Issue> GetLostList(IList<Issue> oldlist, IList<Issue> newlist)
